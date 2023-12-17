@@ -9,9 +9,12 @@ export class Conversation {
   _model!: string;
   _messages!: Message[];
 
-  constructor(model: string, stream = false) {
+  constructor(model: string, systemPrompt = "", stream = false) {
     this._model = model;
     this._messages = [];
+    if (systemPrompt) {
+      this._messages.push({ role: "system", content: systemPrompt });
+    }
   }
 
   async streamNewResponse(content: string, writeChunk?: (s: string) => void) {

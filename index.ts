@@ -6,11 +6,12 @@ const stdout = (s: string) => process.stdout.write(s);
 
 async function main() {
   const model = await getModelOrDefault(GPT_3_5_1106);
+  const systemPrompt = await getSystemPrompt();
   stdout("\n");
   stdout("Hello! Welcome to TermGPT.\n");
   stdout(`You are chatting with ${model}.\n`);
   stdout("Start typing and press Enter to get a response from the model.\n\n");
-  beginConversation(model);
+  beginConversation(model, systemPrompt);
 }
 
 /**
@@ -23,8 +24,8 @@ async function main() {
  * ...
  *
  */
-async function beginConversation(model: string) {
-  const convo = new Conversation(model);
+async function beginConversation(model: string, systemPrompt?: string) {
+  const convo = new Conversation(model, systemPrompt);
 
   stdout("[ME] ");
 
@@ -47,19 +48,26 @@ async function beginConversation(model: string) {
   }
 }
 
-async function getModelOrDefault(defaultModel: string) {
-  stdout("Choose the OpenAI model you'd like to chat with.\n");
-  stdout(`model (${defaultModel}): `);
+async function getSystemPrompt() {
+  stdout("Enter a system prompt (optional): \n");
+  return await userInput();
+}
 
-  // one-shot user prompt
+async function getModelOrDefault(defaultModel: string) {
+  stdout("Choose the OpenAI model you'd like to chat with\n");
+  stdout(`model (${defaultModel}): `);
+  return (await userInput()) || defaultModel;
+}
+
+// returns input from stdin if defined, otherwise empty string.
+const userInput = async () => {
   for await (const line of console) {
     if (line) {
-      return defaultModel;
+      return line;
     }
     break;
   }
-
-  return defaultModel;
-}
+  return "";
+};
 
 main();
