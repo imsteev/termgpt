@@ -1,4 +1,4 @@
-# openai
+# termgpt
 
 To install dependencies:
 
