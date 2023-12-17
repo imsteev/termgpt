@@ -7,37 +7,34 @@ async function main() {
   /**
    * conversating with {model}
    *
-   * <me>
+   * [ME]
    * ...
-   * </me>
    *
-   * <{model}>
+   * [CLI] (in case there are input errors)
+   *
+   * [{model}]
    * ...
-   * </{model}>
    */
 
   console.log(
     `Hello! Welcome to TerminalGPT.\nYou are chatting with ${model}.\nStart typing and press Enter to get a response from the model.`
   );
 
-  console.log("<me>");
+  process.stdout.write("[ME] ");
 
   // never-ending interactive prmopt https://bun.sh/guides/process/stdin
+  // TODO: clean this up to make it easier to understand...
   for await (const line of console) {
     // make sure user enters non-empty text
     if (line.trim().length === 0) {
-      console.log("</me>");
-      console.log(`<cli>must enter non-empty text</cli>\n`);
-      console.log("<me>");
+      process.stdout.write(`\n[CLI] must enter non-empty text`);
+      process.stdout.write("\n\n[ME] ");
       continue;
     }
 
     const msg = await convo.sendMessage(line);
-    console.log(`<${msg.role}>`);
-    console.log(msg.content);
-    console.log(`</${msg.role}>\n`);
-
-    console.log("<me>");
+    process.stdout.write(`\n[${msg.role.toLocaleUpperCase()}] ${msg.content}`);
+    process.stdout.write("\n\n[ME] ");
   }
 }
 
