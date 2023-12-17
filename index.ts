@@ -11,7 +11,8 @@ async function main() {
   stdout("Hello! Welcome to TermGPT.\n");
   stdout(`You are chatting with ${model}.\n`);
   stdout("Start typing and press Enter to get a response from the model.\n\n");
-  beginConversation(model, systemPrompt);
+  const convo = new Conversation(model, systemPrompt);
+  beginConversation(convo);
 }
 
 /**
@@ -24,9 +25,7 @@ async function main() {
  * ...
  *
  */
-async function beginConversation(model: string, systemPrompt?: string) {
-  const convo = new Conversation(model, systemPrompt);
-
+async function beginConversation(convo: Conversation) {
   stdout("[ME] ");
 
   // never-ending interactive prmopt https://bun.sh/guides/process/stdin
@@ -49,21 +48,21 @@ async function beginConversation(model: string, systemPrompt?: string) {
 }
 
 async function getSystemPrompt() {
-  stdout("Enter a system prompt (optional): \n");
-  return await userInput();
+  return await userInput("Enter a system prompt (optional): ");
 }
 
 async function getModelOrDefault(defaultModel: string) {
-  stdout("Choose the OpenAI model you'd like to chat with\n");
-  stdout(`model (${defaultModel}): `);
-  return (await userInput()) || defaultModel;
+  const model = await userInput(`model (${defaultModel}): `);
+  return model || defaultModel;
 }
 
 // one-shot read input from stdin.
-const userInput = async () => {
+const userInput = async (prompt = "") => {
+  stdout(prompt);
   for await (const line of console) {
     return line;
   }
+  return "";
 };
 
 main();
