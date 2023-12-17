@@ -3,11 +3,11 @@ import OpenAI from "openai";
 // gets API Key from environment variable OPENAI_API_KEY
 const openai = new OpenAI();
 
-type message = { content: string; role: "user" | "assistant" | "system" };
+type Message = Pick<OpenAI.ChatCompletionMessageParam, "content" | "role">;
 
 export class Conversation {
   _model!: string;
-  _messages!: message[];
+  _messages!: Message[];
 
   constructor(model: string, stream = false) {
     this._model = model;
@@ -15,25 +15,33 @@ export class Conversation {
   }
 
   // TODO: handle errors
-  async sendMessage(content: string) {
-    const newMessages = this.prepareMessages({ role: "user", content });
-    const completion = await openai.chat.completions.create({
+  async streamNewResponse(content: string, writeChunk?: (s: string) => void) {
+    // shallow copy so that we do not prematurely extend the message history.
+    const messages: Message[] = [...this._messages];
+    messages.push({ role: "user", content });
+
+    const stream = await openai.chat.completions.create({
       model: this._model,
-      messages: newMessages,
+      messages: messages as OpenAI.ChatCompletionMessageParam[],
+      stream: true,
     });
-    const responseMsg = completion.choices[0].message;
-    this._messages = this.prepareMessages({
-      role: responseMsg.role,
-      content: responseMsg.content ?? "",
-    });
-    return this.getLatestMessage();
-  }
 
-  getLatestMessage(): message {
+    // process the stream.
+    let deltas = [];
+    for await (const chunk of stream) {
+      const delta = chunk.choices[0]?.delta;
+      deltas.push(delta);
+      writeChunk?.(delta?.content || "");
+    }
+
+    // assume same role across all deltas.
+    const role = deltas.find((d) => !!d.role)?.role ?? "assistant";
+
+    // make sure to extend context window with full conversation and save it.
+    messages.push({ role, content: deltas.map((d) => d.content).join() });
+    this._messages = messages;
+  }
+  getLatestMessage(): Message {
     return this._messages[this._messages.length - 1];
-  }
-
-  private prepareMessages(msg: message): message[] {
-    return [...this._messages, msg];
   }
 }
