@@ -1,12 +1,9 @@
 import { Conversation } from "./conversation";
 
-const GPT_3_5_1106 = "gpt-3.5-turbo-1106";
-
-const stdout = (s: string) => process.stdout.write(s);
-
 async function main() {
-  const model = await getModelOrDefault(GPT_3_5_1106);
-  const systemPrompt = await getSystemPrompt();
+  const defaultModel = "gpt-3.5-turbo-1106";
+  const model = (await userInput(`model (${defaultModel}): `)) || defaultModel;
+  const systemPrompt = await userInput("Enter a system prompt (optional): ");
   stdout("\n");
   stdout("Hello! Welcome to TermGPT.\n");
   stdout(`You are chatting with ${model}.\n`);
@@ -15,16 +12,6 @@ async function main() {
   beginConversation(convo);
 }
 
-/**
- * [ME]
- * ...
- *
- * [CLI] (in case there are input errors)
- *
- * [{model}]
- * ...
- *
- */
 async function beginConversation(convo: Conversation) {
   stdout("[ME] ");
 
@@ -47,22 +34,15 @@ async function beginConversation(convo: Conversation) {
   }
 }
 
-async function getSystemPrompt() {
-  return await userInput("Enter a system prompt (optional): ");
-}
-
-async function getModelOrDefault(defaultModel: string) {
-  const model = await userInput(`model (${defaultModel}): `);
-  return model || defaultModel;
-}
-
 // one-shot read input from stdin.
-const userInput = async (prompt = "") => {
+async function userInput(prompt = "") {
   stdout(prompt);
   for await (const line of console) {
     return line;
   }
   return "";
-};
+}
+
+const stdout = (s: string) => process.stdout.write(s);
 
 main();
