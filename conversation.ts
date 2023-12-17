@@ -14,19 +14,15 @@ export class Conversation {
     this._messages = [];
   }
 
-  // TODO: handle errors
   async streamNewResponse(content: string, writeChunk?: (s: string) => void) {
-    // shallow copy so that we do not prematurely extend the message history.
-    const messages: Message[] = [...this._messages];
-    messages.push({ role: "user", content });
-
+    // @ts-ignore
     const stream = await openai.chat.completions.create({
       model: this._model,
-      messages: messages as OpenAI.ChatCompletionMessageParam[],
+      messages: [...this._messages, { role: "user", content }],
       stream: true,
     });
 
-    // process the stream.
+    // process the stream. TODO: handle errors
     let deltas = [];
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta;
@@ -34,14 +30,12 @@ export class Conversation {
       writeChunk?.(delta?.content || "");
     }
 
-    // assume same role across all deltas.
-    const role = deltas.find((d) => !!d.role)?.role ?? "assistant";
-
-    // make sure to extend context window with full conversation and save it.
-    messages.push({ role, content: deltas.map((d) => d.content).join() });
-    this._messages = messages;
+    // make sure to extend context window with full conversation.
+    this.saveBackAndForth(content, deltas.map((d) => d.content).join());
   }
-  getLatestMessage(): Message {
-    return this._messages[this._messages.length - 1];
+
+  private saveBackAndForth(userContent: string, asstContent: string) {
+    this._messages.push({ role: "user", content: userContent });
+    this._messages.push({ role: "assistant", content: asstContent });
   }
 }
