@@ -17,7 +17,7 @@ export class Conversation {
     }
   }
 
-  async streamNewResponse(content: string, writeChunk?: (s: string) => void) {
+  async streamNewResponse(content: string, write?: (s: string) => void) {
     const stream = await openai.chat.completions.create({
       model: this._model,
       messages: [
@@ -32,7 +32,7 @@ export class Conversation {
     for await (const chunk of stream) {
       const delta = chunk.choices[0]?.delta;
       deltas.push(delta);
-      writeChunk?.(delta?.content || "");
+      write?.(delta?.content || "");
     }
 
     // make sure to extend context window with full conversation.
