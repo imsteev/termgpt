@@ -1,15 +1,12 @@
 import OpenAI from "openai";
 
-// gets API Key from environment variable OPENAI_API_KEY
 const openai = new OpenAI();
-
-type Message = Pick<OpenAI.ChatCompletionMessageParam, "content" | "role">;
 
 export class Conversation {
   _model!: string;
-  _messages!: Message[];
+  _messages!: { content: string | null; role: OpenAI.ChatCompletionRole }[];
 
-  constructor(model: string, systemPrompt = "", stream = false) {
+  constructor(model: string, systemPrompt = "") {
     this._model = model;
     this._messages = [];
     if (systemPrompt) {
@@ -18,10 +15,12 @@ export class Conversation {
   }
 
   async streamNewResponse(content: string, writeChunk?: (s: string) => void) {
-    // @ts-ignore
     const stream = await openai.chat.completions.create({
       model: this._model,
-      messages: [...this._messages, { role: "user", content }],
+      messages: [
+        ...this._messages,
+        { role: "user", content },
+      ] as OpenAI.ChatCompletionMessageParam[], // ugh, typescript.
       stream: true,
     });
 

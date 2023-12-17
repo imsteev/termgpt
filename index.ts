@@ -59,15 +59,11 @@ async function getModelOrDefault(defaultModel: string) {
   return (await userInput()) || defaultModel;
 }
 
-// returns input from stdin if defined, otherwise empty string.
+// one-shot read input from stdin.
 const userInput = async () => {
   for await (const line of console) {
-    if (line) {
-      return line;
-    }
-    break;
+    return line;
   }
-  return "";
 };
 
 main();
