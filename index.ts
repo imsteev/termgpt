@@ -6,9 +6,10 @@ const stdout = (s: string) => process.stdout.write(s);
 
 async function main() {
   const model = await getModelOrDefault(GPT_3_5_1106);
+  stdout("\n");
   stdout("Hello! Welcome to TermGPT.\n");
   stdout(`You are chatting with ${model}.\n`);
-  stdout("Start typing and press Enter to get a response from the model.\n");
+  stdout("Start typing and press Enter to get a response from the model.\n\n");
   beginConversation(model);
 }
 
