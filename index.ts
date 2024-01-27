@@ -14,7 +14,7 @@ async function main() {
   stdout(`You are chatting with ${chalk.magentaBright(model)}.\n`);
   stdout("Start typing and press Enter to get a response from the model.\n\n");
   const convo = new Conversation(model, systemPrompt);
-  beginConversation(convo);
+  await beginConversation(convo);
 }
 
 async function beginConversation(convo: Conversation) {
@@ -59,4 +59,5 @@ const stdout = (s: string, pre?: (s: string) => string) => {
   process.stdout.write(pre ? pre(s) : s);
 };
 
-main();
+// await is important to keep prompt open forever (until user ctrl+c's out)
+await main();
