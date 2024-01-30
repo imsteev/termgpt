@@ -1,19 +1,31 @@
 import chalk from "chalk";
 import { Conversation } from "./conversation";
 
+const defaultModel = process.env.OPENAI_MODEL;
+const defaultSystemPrompt = process.env.SYSTEM_PROMPT;
+
 async function main() {
-  const defaultModel = "gpt-3.5-turbo-1106";
   const model =
-    (await userInput(`model ${chalk.gray(`(${defaultModel})`)}: `)) ||
-    defaultModel;
-  const systemPrompt = await userInput(
-    `system prompt ${chalk.gray("(optional)")}: `
-  );
+    defaultModel ||
+    (await userInput(`model ${chalk.gray(`(${defaultModel})`)}: `));
+  const systemPrompt =
+    defaultSystemPrompt === "SKIP"
+      ? undefined
+      : defaultSystemPrompt ||
+        (await userInput(`system prompt ${chalk.gray("(optional)")}: `));
+
   stdout("\n");
-  stdout("Hello! Welcome to TermGPT.\n");
+  stdout(chalk.bgGrey("----- TermGPT -----" + "\n\n"));
   stdout(`You are chatting with ${chalk.magentaBright(model)}.\n`);
-  stdout("Start typing and press Enter to get a response from the model.\n\n");
-  const convo = new Conversation(model, systemPrompt);
+  stdout(
+    `System prompt: ${chalk.yellow(
+      systemPrompt !== undefined ? `"${systemPrompt}"` : "none"
+    )}.\n`
+  );
+  stdout(
+    "Send a message and press Enter to get a response from the model.\n\n"
+  );
+  const convo = new Conversation(model!, systemPrompt);
   await beginConversation(convo);
 }
 
