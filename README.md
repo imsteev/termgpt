@@ -1,17 +1,30 @@
 # termgpt
 
-To install dependencies:
+<img width="572" alt="Screenshot 2024-01-30 at 12 12 59 AM" src="https://github.com/imsteev/termgpt/assets/9023630/f9c984a2-6a5e-42e4-a0d5-6436f1e5d71a">
+
+## Install dependencies
 
 ```bash
 bun install
 ```
 
-To run:
-
+## Quickstart
 ```bash
-# Make sure to set OPENAI_API_KEY as an environment variable.
+bun build index.ts --compile --outfile=chat
+./chat
+```
 
-bun run index.ts
+
+## Development
+```bash
+bun run index.ts 
+```
+
+### Environment variables
+```
+OPENAI_API_KEY (REQUIRED)
+OPENAI_MODEL
+SYSTEM_PROMPT
 ```
 
 
